@@ -1,10 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import {
-  Note,
-  readNoteByIdServer,
-  readNotes,
-  readNotesServer,
-} from "~/api/notes";
+import { Note, readNoteByIdServer, readNotesServer } from "~/api/notes";
 
 export const notesListQueryOptions = () =>
   queryOptions<Note[]>({

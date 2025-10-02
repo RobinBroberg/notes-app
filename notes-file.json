@@ -1,1 +1,20 @@
-[{ "id": 1, "title": "Första noten", "body": "Hej!", "favorite": false }]
+[
+  {
+    "id": 1,
+    "title": "Första noten 5252",
+    "body": "Hej!v3v3 525",
+    "favorite": true
+  },
+  {
+    "id": 2,
+    "title": "testing 6666",
+    "body": "testing",
+    "favorite": false
+  },
+  {
+    "id": 4,
+    "title": "sgg",
+    "body": "gsgs",
+    "favorite": false
+  }
+]

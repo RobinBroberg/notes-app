@@ -14,7 +14,7 @@ import { Route as PostsRouteRouteImport } from './routes/posts.route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
-import { Route as NotesIdRouteImport } from './routes/notes.$id'
+import { Route as NotesIdRouteImport } from './routes/notes_.$id'
 import { Route as PostsPostIdDeepRouteImport } from './routes/posts_.$postId.deep'
 
 const NotesRoute = NotesRouteImport.update({
@@ -43,9 +43,9 @@ const PostsPostIdRoute = PostsPostIdRouteImport.update({
   getParentRoute: () => PostsRouteRoute,
 } as any)
 const NotesIdRoute = NotesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => NotesRoute,
+  id: '/notes_/$id',
+  path: '/notes/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PostsPostIdDeepRoute = PostsPostIdDeepRouteImport.update({
   id: '/posts_/$postId/deep',
@@ -56,7 +56,7 @@ const PostsPostIdDeepRoute = PostsPostIdDeepRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/posts': typeof PostsRouteRouteWithChildren
-  '/notes': typeof NotesRouteWithChildren
+  '/notes': typeof NotesRoute
   '/notes/$id': typeof NotesIdRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/posts/': typeof PostsIndexRoute
@@ -64,7 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/notes': typeof NotesRouteWithChildren
+  '/notes': typeof NotesRoute
   '/notes/$id': typeof NotesIdRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/posts': typeof PostsIndexRoute
@@ -74,8 +74,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/posts': typeof PostsRouteRouteWithChildren
-  '/notes': typeof NotesRouteWithChildren
-  '/notes/$id': typeof NotesIdRoute
+  '/notes': typeof NotesRoute
+  '/notes_/$id': typeof NotesIdRoute
   '/posts/$postId': typeof PostsPostIdRoute
   '/posts/': typeof PostsIndexRoute
   '/posts_/$postId/deep': typeof PostsPostIdDeepRoute
@@ -103,7 +103,7 @@ export interface FileRouteTypes {
     | '/'
     | '/posts'
     | '/notes'
-    | '/notes/$id'
+    | '/notes_/$id'
     | '/posts/$postId'
     | '/posts/'
     | '/posts_/$postId/deep'
@@ -112,7 +112,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PostsRouteRoute: typeof PostsRouteRouteWithChildren
-  NotesRoute: typeof NotesRouteWithChildren
+  NotesRoute: typeof NotesRoute
+  NotesIdRoute: typeof NotesIdRoute
   PostsPostIdDeepRoute: typeof PostsPostIdDeepRoute
 }
 
@@ -153,12 +154,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostsPostIdRouteImport
       parentRoute: typeof PostsRouteRoute
     }
-    '/notes/$id': {
-      id: '/notes/$id'
-      path: '/$id'
+    '/notes_/$id': {
+      id: '/notes_/$id'
+      path: '/notes/$id'
       fullPath: '/notes/$id'
       preLoaderRoute: typeof NotesIdRouteImport
-      parentRoute: typeof NotesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/posts_/$postId/deep': {
       id: '/posts_/$postId/deep'
@@ -184,20 +185,11 @@ const PostsRouteRouteWithChildren = PostsRouteRoute._addFileChildren(
   PostsRouteRouteChildren,
 )
 
-interface NotesRouteChildren {
-  NotesIdRoute: typeof NotesIdRoute
-}
-
-const NotesRouteChildren: NotesRouteChildren = {
-  NotesIdRoute: NotesIdRoute,
-}
-
-const NotesRouteWithChildren = NotesRoute._addFileChildren(NotesRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PostsRouteRoute: PostsRouteRouteWithChildren,
-  NotesRoute: NotesRouteWithChildren,
+  NotesRoute: NotesRoute,
+  NotesIdRoute: NotesIdRoute,
   PostsPostIdDeepRoute: PostsPostIdDeepRoute,
 }
 export const routeTree = rootRouteImport

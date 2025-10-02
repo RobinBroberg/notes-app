@@ -12,14 +12,12 @@ export type Note = {
 
 export async function readNotes(): Promise<Note[]> {
   const data = await fs.readFile(filePath, "utf-8");
-  console.log("Reading from:", filePath);
   return JSON.parse(data);
 }
 
 export async function writeNotes(notes: Note[]) {
   await fs.writeFile(filePath, JSON.stringify(notes, null, 2), "utf-8");
 }
-
 
 export const readNotesServer = createServerFn({ method: "GET" }).handler(
   async (): Promise<Note[]> => readNotes()
@@ -34,12 +32,13 @@ export const readNoteByIdServer = createServerFn({ method: "GET" })
     return note;
   });
 
-  
 export const createNoteServer = createServerFn({ method: "POST" })
-  .inputValidator((input: { title: string; body?: string; favorite?: boolean }) => input)
+  .inputValidator(
+    (input: { title: string; body?: string; favorite?: boolean }) => input
+  )
   .handler(async ({ data }) => {
     const notes = await readNotes();
-    const nextId = notes.length ? Math.max(...notes.map(n => n.id)) + 1 : 1;
+    const nextId = notes.length ? Math.max(...notes.map((n) => n.id)) + 1 : 1;
 
     const newNote: Note = {
       id: nextId,
@@ -52,12 +51,13 @@ export const createNoteServer = createServerFn({ method: "POST" })
     return newNote;
   });
 
-
 export const updateNoteServer = createServerFn({ method: "POST" })
-  .inputValidator((input: { id: number; patch: Partial<Omit<Note, "id">> }) => input)
+  .inputValidator(
+    (input: { id: number; patch: Partial<Omit<Note, "id">> }) => input
+  )
   .handler(async ({ data }) => {
     const notes = await readNotes();
-    const idx = notes.findIndex(n => n.id === data.id);
+    const idx = notes.findIndex((n) => n.id === data.id);
     if (idx === -1) throw new Error(`Note ${data.id} not found`);
 
     const updated: Note = { ...notes[idx], ...data.patch };
@@ -71,7 +71,7 @@ export const deleteNoteServer = createServerFn({ method: "POST" })
   .inputValidator((id: number) => id)
   .handler(async ({ data: id }) => {
     const notes = await readNotes();
-    const next = notes.filter(n => n.id !== id);
+    const next = notes.filter((n) => n.id !== id);
     if (next.length === notes.length) throw new Error(`Note ${id} not found`);
     await writeNotes(next);
     return { ok: true };
