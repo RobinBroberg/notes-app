@@ -10,21 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as NotesRouteImport } from './routes/notes'
-import { Route as PostsRouteRouteImport } from './routes/posts.route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PostsIndexRouteImport } from './routes/posts.index'
-import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 import { Route as NotesIdRouteImport } from './routes/notes_.$id'
-import { Route as PostsPostIdDeepRouteImport } from './routes/posts_.$postId.deep'
 
 const NotesRoute = NotesRouteImport.update({
   id: '/notes',
   path: '/notes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostsRouteRoute = PostsRouteRouteImport.update({
-  id: '/posts',
-  path: '/posts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -32,89 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PostsIndexRoute = PostsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PostsRouteRoute,
-} as any)
-const PostsPostIdRoute = PostsPostIdRouteImport.update({
-  id: '/$postId',
-  path: '/$postId',
-  getParentRoute: () => PostsRouteRoute,
-} as any)
 const NotesIdRoute = NotesIdRouteImport.update({
   id: '/notes_/$id',
   path: '/notes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PostsPostIdDeepRoute = PostsPostIdDeepRouteImport.update({
-  id: '/posts_/$postId/deep',
-  path: '/posts/$postId/deep',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/posts': typeof PostsRouteRouteWithChildren
   '/notes': typeof NotesRoute
   '/notes/$id': typeof NotesIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/posts/': typeof PostsIndexRoute
-  '/posts/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/notes': typeof NotesRoute
   '/notes/$id': typeof NotesIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/posts': typeof PostsIndexRoute
-  '/posts/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/posts': typeof PostsRouteRouteWithChildren
   '/notes': typeof NotesRoute
   '/notes_/$id': typeof NotesIdRoute
-  '/posts/$postId': typeof PostsPostIdRoute
-  '/posts/': typeof PostsIndexRoute
-  '/posts_/$postId/deep': typeof PostsPostIdDeepRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/posts'
-    | '/notes'
-    | '/notes/$id'
-    | '/posts/$postId'
-    | '/posts/'
-    | '/posts/$postId/deep'
+  fullPaths: '/' | '/notes' | '/notes/$id'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/notes'
-    | '/notes/$id'
-    | '/posts/$postId'
-    | '/posts'
-    | '/posts/$postId/deep'
-  id:
-    | '__root__'
-    | '/'
-    | '/posts'
-    | '/notes'
-    | '/notes_/$id'
-    | '/posts/$postId'
-    | '/posts/'
-    | '/posts_/$postId/deep'
+  to: '/' | '/notes' | '/notes/$id'
+  id: '__root__' | '/' | '/notes' | '/notes_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PostsRouteRoute: typeof PostsRouteRouteWithChildren
   NotesRoute: typeof NotesRoute
   NotesIdRoute: typeof NotesIdRoute
-  PostsPostIdDeepRoute: typeof PostsPostIdDeepRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -126,33 +68,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/posts': {
-      id: '/posts'
-      path: '/posts'
-      fullPath: '/posts'
-      preLoaderRoute: typeof PostsRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/posts/': {
-      id: '/posts/'
-      path: '/'
-      fullPath: '/posts/'
-      preLoaderRoute: typeof PostsIndexRouteImport
-      parentRoute: typeof PostsRouteRoute
-    }
-    '/posts/$postId': {
-      id: '/posts/$postId'
-      path: '/$postId'
-      fullPath: '/posts/$postId'
-      preLoaderRoute: typeof PostsPostIdRouteImport
-      parentRoute: typeof PostsRouteRoute
     }
     '/notes_/$id': {
       id: '/notes_/$id'
@@ -161,36 +82,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/posts_/$postId/deep': {
-      id: '/posts_/$postId/deep'
-      path: '/posts/$postId/deep'
-      fullPath: '/posts/$postId/deep'
-      preLoaderRoute: typeof PostsPostIdDeepRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
-interface PostsRouteRouteChildren {
-  PostsPostIdRoute: typeof PostsPostIdRoute
-  PostsIndexRoute: typeof PostsIndexRoute
-}
-
-const PostsRouteRouteChildren: PostsRouteRouteChildren = {
-  PostsPostIdRoute: PostsPostIdRoute,
-  PostsIndexRoute: PostsIndexRoute,
-}
-
-const PostsRouteRouteWithChildren = PostsRouteRoute._addFileChildren(
-  PostsRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PostsRouteRoute: PostsRouteRouteWithChildren,
   NotesRoute: NotesRoute,
   NotesIdRoute: NotesIdRoute,
-  PostsPostIdDeepRoute: PostsPostIdDeepRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,20 +1,26 @@
 [
   {
     "id": 1,
-    "title": "Första noten 5252",
-    "body": "Hej!v3v3 525",
+    "title": "Städa",
+    "body": "Städa",
     "favorite": true
   },
   {
     "id": 2,
-    "title": "testing 6666",
-    "body": "testing",
+    "title": "Diska",
+    "body": "Diska",
+    "favorite": true
+  },
+  {
+    "id": 3,
+    "title": "Träna",
+    "body": "Träna",
     "favorite": false
   },
   {
     "id": 4,
-    "title": "sgg",
-    "body": "gsgs",
+    "title": "Test",
+    "body": "Test",
     "favorite": false
   }
 ]

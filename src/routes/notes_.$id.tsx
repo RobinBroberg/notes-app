@@ -4,14 +4,19 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { noteByIdQueryOptions } from "~/utils/notes";
+import {
+  invalidateNotes,
+  noteByIdQueryOptions,
+  prefetchNoteById,
+  removeNoteFromCache,
+} from "~/utils/notes";
 import { deleteNoteServer, updateNoteServer } from "~/api/notes";
 import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/notes_/$id")({
   loader: async ({ context, params }) => {
     const id = Number(params.id);
-    await context.queryClient.ensureQueryData(noteByIdQueryOptions(id));
+    await prefetchNoteById(context.queryClient, id);
   },
   component: NoteEdit,
 });
@@ -43,7 +48,7 @@ function NoteEdit() {
     }) => updateNoteServer({ data: { id, patch: payload } }),
     onSuccess: (updated) => {
       qc.setQueryData(["note", id], updated);
-      qc.invalidateQueries({ queryKey: ["notes"] });
+      invalidateNotes(qc);
       setTitle(updated.title);
       setBody(updated.body ?? "");
       setFavorite(!!updated.favorite);
@@ -54,8 +59,8 @@ function NoteEdit() {
   const del = useMutation({
     mutationFn: () => deleteNoteServer({ data: id }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["notes"] });
-      qc.removeQueries({ queryKey: ["note", id] });
+      invalidateNotes(qc);
+      removeNoteFromCache(qc, id);
       navigate({ to: "/notes" });
     },
   });

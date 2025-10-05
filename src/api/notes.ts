@@ -10,12 +10,12 @@ export type Note = {
   favorite: boolean;
 };
 
-export async function readNotes(): Promise<Note[]> {
+async function readNotes(): Promise<Note[]> {
   const data = await fs.readFile(filePath, "utf-8");
   return JSON.parse(data);
 }
 
-export async function writeNotes(notes: Note[]) {
+async function writeNotes(notes: Note[]) {
   await fs.writeFile(filePath, JSON.stringify(notes, null, 2), "utf-8");
 }
 

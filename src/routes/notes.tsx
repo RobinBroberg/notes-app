@@ -1,16 +1,20 @@
-import * as React from "react";
 import {
   useSuspenseQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import { notesListQueryOptions } from "~/utils/notes";
+import {
+  invalidateNotes,
+  notesListQueryOptions,
+  prefetchNotes,
+} from "~/utils/notes";
 import { createNoteServer } from "~/api/notes";
+import { useState } from "react";
 
 export const Route = createFileRoute("/notes")({
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(notesListQueryOptions());
+    await prefetchNotes(context.queryClient);
   },
   head: () => ({ meta: [{ title: "Notes" }] }),
   component: NotesComponent,
@@ -19,15 +23,21 @@ export const Route = createFileRoute("/notes")({
 function NotesComponent() {
   const qc = useQueryClient();
   const notesQuery = useSuspenseQuery(notesListQueryOptions());
+  const notes = notesQuery.data;
 
-  const [title, setTitle] = React.useState("");
-  const [body, setBody] = React.useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [favorite, setFavorite] = useState(false);
+
+  const sortedNotes = [...notes].sort((a, b) => {
+    return (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0);
+  });
 
   const addNote = useMutation({
-    mutationFn: (data: { title: string; body?: string }) =>
+    mutationFn: (data: { title: string; body?: string; favorite?: boolean }) =>
       createNoteServer({ data }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["notes"] });
+      invalidateNotes(qc);
       setTitle("");
       setBody("");
     },
@@ -35,10 +45,9 @@ function NotesComponent() {
 
   const canSubmit = title.trim().length > 0 && !addNote.isPending;
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
-    addNote.mutate({ title: title.trim(), body: body.trim() || undefined });
+    addNote.mutate({ title, body, favorite: favorite });
   }
 
   return (
@@ -46,7 +55,7 @@ function NotesComponent() {
       <div>
         <h2 className="text-lg font-semibold mb-2">Notes</h2>
         <ul className="list-disc pl-4 min-w-64">
-          {notesQuery.data.map((note) => (
+          {sortedNotes.map((note) => (
             <li key={note.id} className="whitespace-nowrap">
               <Link
                 to="/notes/$id"
@@ -91,6 +100,17 @@ function NotesComponent() {
               rows={4}
             />
           </label>
+
+          <div>
+            <label className="inline-flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={favorite}
+                onChange={(e) => setFavorite(e.target.checked)}
+              />
+              <span>Favorite</span>
+            </label>
+          </div>
 
           <button
             type="submit"
