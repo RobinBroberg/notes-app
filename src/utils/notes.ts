@@ -1,14 +1,17 @@
 import { QueryClient, queryOptions } from "@tanstack/react-query";
-import { Note, readNoteByIdServer, readNotesServer } from "~/api/notes";
+import { readNoteByIdServer, readNotesServer } from "~/api/notes";
+import { notesTable } from "~/db/schema";
+
+export type Note = typeof notesTable.$inferSelect;
 
 export const notesListQueryOptions = () =>
-  queryOptions<Note[]>({
+  queryOptions({
     queryKey: ["notes"],
     queryFn: () => readNotesServer(),
   });
 
 export const noteByIdQueryOptions = (id: number) =>
-  queryOptions<Note>({
+  queryOptions({
     queryKey: ["note", id],
     queryFn: () => readNoteByIdServer({ data: id }),
   });

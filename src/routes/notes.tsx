@@ -35,7 +35,7 @@ function NotesComponent() {
 
   const addNote = useMutation({
     mutationFn: (data: { title: string; body?: string; favorite?: boolean }) =>
-      createNoteServer({ data }),
+      createNoteServer({ data: { title, body, favorite } }),
     onSuccess: () => {
       invalidateNotes(qc);
       setTitle("");
