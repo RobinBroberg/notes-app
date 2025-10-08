@@ -1,12 +1,19 @@
 import { sql } from "drizzle-orm";
-import { int, sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  mysqlTable,
+  timestamp,
+  varchar,
+  int,
+  text,
+  boolean,
+} from "drizzle-orm/mysql-core";
 
-export const notesTable = sqliteTable("notes_table", {
-  id: int().primaryKey({ autoIncrement: true }),
-  title: text().notNull(),
-  body: text("body").notNull().default(""),
-  favorite: integer("favorite", { mode: "boolean" }).notNull().default(false),
-  createdAt: text("created_at")
+export const notesTable = mysqlTable("notes_table", {
+  id: int().primaryKey().autoincrement().notNull(),
+  title: varchar({ length: 255 }).notNull(),
+  body: text().notNull().default(""),
+  favorite: boolean("favorite").notNull().default(false),
+  createdAt: timestamp("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });

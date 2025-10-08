@@ -1,46 +1,47 @@
 import "dotenv/config";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import mysql from "mysql2/promise";
+import { drizzle } from "drizzle-orm/mysql2";
 import { eq } from "drizzle-orm";
 import { NewNote, Note, notesTable } from "./schema";
 
-const sqlite = new Database(process.env.DB_FILE_NAME ?? "file.local.db");
-export const db = drizzle(sqlite, { schema: { notesTable } });
+const pool = mysql.createPool({
+  uri: process.env.DATABASE_URL!,
+  connectionLimit: 10,
+});
 
-export function getNotes() {
-  return db.select().from(notesTable).all();
+export const db = drizzle({ client: pool });
+
+export async function getNotes(): Promise<Note[]> {
+  return await db.select().from(notesTable);
 }
 
-export function addNote(input: NewNote): Note {
-  return db.insert(notesTable).values(input).returning().get();
+export async function addNote(note: NewNote) {
+  const [insertedNote] = await db.insert(notesTable).values(note);
+  const id = insertedNote.insertId;
+
+  const noteResult = await db
+    .select()
+    .from(notesTable)
+    .where(eq(notesTable.id, id));
+
+  return noteResult[0];
 }
 
-export function getNoteById(id: number): Note | undefined {
-  return db.select().from(notesTable).where(eq(notesTable.id, id)).get();
+export async function getNoteById(id: number): Promise<Note | undefined> {
+  const [row] = await db.select().from(notesTable).where(eq(notesTable.id, id));
+  return row;
 }
 
-export function updateNote(
+export async function updateNote(
   id: number,
-  patch: Partial<typeof notesTable.$inferInsert>
-): Note {
-  const updated = db
-    .update(notesTable)
-    .set(patch)
-    .where(eq(notesTable.id, id))
-    .returning()
-    .get();
-
-  if (!updated) throw new Error(`Note ${id} not found`);
-  return updated;
+  patch: Partial<NewNote>
+): Promise<Note> {
+  await db.update(notesTable).set(patch).where(eq(notesTable.id, id));
+  const [row] = await db.select().from(notesTable).where(eq(notesTable.id, id));
+  return row;
 }
 
-export function deleteNote(id: number): { ok: true } {
-  const deleted = db
-    .delete(notesTable)
-    .where(eq(notesTable.id, id))
-    .returning({ id: notesTable.id })
-    .get();
-
-  if (!deleted) throw new Error(`Note ${id} not found`);
+export async function deleteNote(id: number): Promise<{ ok: true }> {
+  await db.delete(notesTable).where(eq(notesTable.id, id));
   return { ok: true };
 }

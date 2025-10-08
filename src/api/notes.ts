@@ -15,7 +15,7 @@ export const readNotesServer = createServerFn({ method: "GET" }).handler(
 export const readNoteByIdServer = createServerFn({ method: "GET" })
   .inputValidator((id: number) => id)
   .handler(async ({ data: id }): Promise<Note> => {
-    const note = getNoteById(id);
+    const note = await getNoteById(id);
     if (!note) throw new Error(`Note ${id} not found`);
     return note;
   });
