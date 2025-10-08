@@ -11,6 +11,7 @@ import {
 } from "~/utils/notes";
 import { createNoteServer } from "~/api/notes";
 import { useState } from "react";
+import { NewNote, Note } from "~/db/schema";
 
 export const Route = createFileRoute("/notes")({
   loader: async ({ context }) => {
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/notes")({
 function NotesComponent() {
   const qc = useQueryClient();
   const notesQuery = useSuspenseQuery(notesListQueryOptions());
-  const notes = notesQuery.data;
+  const notes = notesQuery.data as Note[];
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -34,8 +35,7 @@ function NotesComponent() {
   });
 
   const addNote = useMutation({
-    mutationFn: (data: { title: string; body?: string; favorite?: boolean }) =>
-      createNoteServer({ data: { title, body, favorite } }),
+    mutationFn: (data: NewNote) => createNoteServer({ data }),
     onSuccess: () => {
       invalidateNotes(qc);
       setTitle("");
@@ -47,7 +47,7 @@ function NotesComponent() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    addNote.mutate({ title, body, favorite: favorite });
+    addNote.mutate({ title, body, favorite: favorite } satisfies NewNote);
   }
 
   return (

@@ -1,17 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { desc, eq } from "drizzle-orm";
-
-import { notesTable } from "../db/schema";
+import { Note, notesTable } from "../db/schema";
 import {
   addNote,
-  db,
   deleteNote,
   getNoteById,
   getNotes,
   updateNote,
 } from "~/db/db";
-
-export type Note = typeof notesTable.$inferSelect;
 
 export const readNotesServer = createServerFn({ method: "GET" }).handler(
   async () => getNotes()
