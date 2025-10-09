@@ -59,8 +59,19 @@ function NotesComponent() {
                 className="block py-1 text-blue-800 hover:text-blue-600"
                 activeProps={{ className: "text-black font-bold" }}
               >
-                <div>
-                  {note.title} {note.favorite ? "★" : ""}
+                <div className="flex flex-row justify-between items-center py-1">
+                  <div>
+                    {note.title} {note.favorite ? "★" : ""}
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    {note.createdAt.toLocaleString("sv-SE", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
                 </div>
               </Link>
             </li>
