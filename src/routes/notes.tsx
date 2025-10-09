@@ -32,19 +32,20 @@ function NotesComponent() {
 
   const addNote = useMutation({
     mutationFn: (data: NewNote) => createNoteServer({ data }),
-    onSuccess: () => {
-      invalidateNotes(qc);
-      setTitle("");
-      setBody("");
-    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["notes"] }),
   });
 
-  const canSubmit = title.trim().length > 0 && !addNote.isPending;
+  const { isPending, variables: pendingNote } = addNote;
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    addNote.mutate({ title, body, favorite: favorite } satisfies NewNote);
+    addNote.mutate({ title, body, favorite } satisfies NewNote);
+    setTitle("");
+    setBody("");
+    setFavorite(false);
   }
+
+  const canSubmit = title.trim().length > 0 && !addNote.isPending;
 
   return (
     <div className="p-2 flex gap-6">
@@ -76,6 +77,16 @@ function NotesComponent() {
               </Link>
             </li>
           ))}
+          {isPending && pendingNote && (
+            <li key="optimistic">
+              <div className="flex justify-between">
+                <span>
+                  {pendingNote.title} {pendingNote.favorite ? "★" : ""}
+                </span>
+                <span className="text-sm text-gray-400">saving…</span>
+              </div>
+            </li>
+          )}
         </ul>
       </div>
       <hr className="border-l border-gray-300" />

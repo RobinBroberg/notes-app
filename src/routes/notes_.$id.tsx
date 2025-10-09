@@ -4,14 +4,9 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import {
-  invalidateNotes,
-  noteByIdQueryOptions,
-  prefetchNoteById,
-  removeNoteFromCache,
-} from "~/utils/notes";
+import { noteByIdQueryOptions, prefetchNoteById } from "~/utils/notes";
 import { deleteNoteServer, updateNoteServer } from "~/api/notes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/notes_/$id")({
   loader: async ({ context, params }) => {
@@ -34,43 +29,39 @@ function NoteEdit() {
   const [body, setBody] = useState(note.body ?? "");
   const [favorite, setFavorite] = useState(!!note.favorite);
 
-  useEffect(() => {
-    setTitle(note.title);
-    setBody(note.body ?? "");
-    setFavorite(!!note.favorite);
-  }, [note.id]);
-
   const save = useMutation({
-    mutationFn: (payload: {
-      title: string;
-      body?: string;
-      favorite: boolean;
-    }) => updateNoteServer({ data: { id, patch: payload } }),
-    onSuccess: (updated) => {
-      qc.setQueryData(["note", id], updated);
-      invalidateNotes(qc);
-      setTitle(updated.title);
-      setBody(updated.body ?? "");
-      setFavorite(!!updated.favorite);
-      navigate({ to: "/notes" });
+    mutationFn: (patch: { title: string; body?: string; favorite: boolean }) =>
+      updateNoteServer({ data: { id, patch } }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["note", id] });
+      qc.invalidateQueries({ queryKey: ["notes"] });
     },
   });
 
   const del = useMutation({
     mutationFn: () => deleteNoteServer({ data: id }),
-    onSuccess: () => {
-      invalidateNotes(qc);
-      removeNoteFromCache(qc, id);
-      navigate({ to: "/notes" });
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["notes"] });
     },
   });
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    save.mutate({
+
+    const payload = {
       title: title.trim(),
       body: body.trim() || "",
       favorite,
+    };
+
+    save.mutate(payload, {
+      onSuccess: () => navigate({ to: "/notes" }),
+    });
+  }
+
+  function onDelete() {
+    del.mutate(undefined, {
+      onSuccess: () => navigate({ to: "/notes" }),
     });
   }
 
@@ -114,7 +105,7 @@ function NoteEdit() {
 
         <button
           type="button"
-          onClick={() => del.mutate()}
+          onClick={onDelete}
           disabled={del.isPending}
           className="rounded px-4 py-2 border border-red-500 text-red-600"
         >
