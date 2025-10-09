@@ -24,15 +24,11 @@ export const Route = createFileRoute("/notes")({
 function NotesComponent() {
   const qc = useQueryClient();
   const notesQuery = useSuspenseQuery(notesListQueryOptions());
-  const notes = notesQuery.data as Note[];
+  const notes = notesQuery.data;
 
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [favorite, setFavorite] = useState(false);
-
-  const sortedNotes = [...notes].sort((a, b) => {
-    return (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0);
-  });
 
   const addNote = useMutation({
     mutationFn: (data: NewNote) => createNoteServer({ data }),
@@ -55,7 +51,7 @@ function NotesComponent() {
       <div>
         <h2 className="text-lg font-semibold mb-2">Notes</h2>
         <ul className="list-disc pl-4 min-w-64">
-          {sortedNotes.map((note) => (
+          {notes.map((note) => (
             <li key={note.id} className="whitespace-nowrap">
               <Link
                 to="/notes/$id"

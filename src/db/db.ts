@@ -1,7 +1,7 @@
 import "dotenv/config";
 import mysql from "mysql2/promise";
 import { drizzle } from "drizzle-orm/mysql2";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { NewNote, Note, notesTable } from "./schema";
 
 const pool = mysql.createPool({
@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 export const db = drizzle({ client: pool });
 
 export async function getNotes(): Promise<Note[]> {
-  return await db.select().from(notesTable);
+  return await db.select().from(notesTable).orderBy(desc(notesTable.createdAt));
 }
 
 export async function addNote(note: NewNote) {
