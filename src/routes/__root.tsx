@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  useNavigate,
 } from "@tanstack/react-router";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
@@ -14,6 +15,7 @@ import { DefaultCatchBoundary } from "~/components/DefaultCatchBoundary";
 import { NotFound } from "~/components/NotFound";
 import appCss from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
+import { logoutServer } from "~/api/auth";
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
@@ -76,13 +78,23 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    try {
+      await logoutServer();
+      navigate({ to: "/login", replace: true });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  }
   return (
     <html>
       <head>
         <HeadContent />
       </head>
       <body>
-        <div className="p-2 flex gap-2 text-lg">
+        <div className="p-2 flex gap-4 items-center text-lg">
           <Link
             to="/notes"
             activeProps={{
@@ -91,6 +103,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           >
             Notes
           </Link>{" "}
+          <button
+            onClick={handleLogout}
+            className="ml-auto bg-blue-500 text-white px-2 rounded"
+          >
+            Logout
+          </button>
         </div>
         <hr />
         {children}

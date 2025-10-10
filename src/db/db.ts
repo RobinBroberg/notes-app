@@ -1,8 +1,8 @@
 import "dotenv/config";
 import mysql from "mysql2/promise";
 import { drizzle } from "drizzle-orm/mysql2";
-import { eq, desc } from "drizzle-orm";
-import { NewNote, Note, notesTable } from "./schema";
+import { eq, desc, and } from "drizzle-orm";
+import { NewNote, Note, notes } from "./schema";
 
 const pool = mysql.createPool({
   uri: process.env.DATABASE_URL!,
@@ -11,37 +11,35 @@ const pool = mysql.createPool({
 
 export const db = drizzle({ client: pool });
 
-export async function getNotes(): Promise<Note[]> {
-  return await db.select().from(notesTable).orderBy(desc(notesTable.createdAt));
+export async function getNotes(userId: number) {
+  return db
+    .select()
+    .from(notes)
+    .where(eq(notes.userId, userId))
+    .orderBy(desc(notes.createdAt));
 }
 
 export async function addNote(note: NewNote) {
-  const [insertedNote] = await db.insert(notesTable).values(note);
+  const [insertedNote] = await db.insert(notes).values(note);
   const id = insertedNote.insertId;
 
-  const noteResult = await db
-    .select()
-    .from(notesTable)
-    .where(eq(notesTable.id, id));
+  const noteResult = await db.select().from(notes).where(eq(notes.id, id));
 
   return noteResult[0];
 }
 
 export async function getNoteById(id: number): Promise<Note | undefined> {
-  const [row] = await db.select().from(notesTable).where(eq(notesTable.id, id));
+  const [row] = await db.select().from(notes).where(eq(notes.id, id));
   return row;
 }
 
-export async function updateNote(
-  id: number,
-  patch: Partial<NewNote>
-): Promise<Note> {
-  await db.update(notesTable).set(patch).where(eq(notesTable.id, id));
-  const [row] = await db.select().from(notesTable).where(eq(notesTable.id, id));
-  return row;
+export async function updateNote(userId: number, id: number, patch: any) {
+  await db
+    .update(notes)
+    .set(patch)
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)));
 }
 
-export async function deleteNote(id: number): Promise<{ ok: true }> {
-  await db.delete(notesTable).where(eq(notesTable.id, id));
-  return { ok: true };
+export async function deleteNote(userId: number, id: number) {
+  await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)));
 }

@@ -3,14 +3,23 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
+import {
+  Link,
+  Outlet,
+  createFileRoute,
+  redirect,
+} from "@tanstack/react-router";
 import { notesListQueryOptions, prefetchNotes } from "~/utils/notes";
 import { createNoteServer } from "~/api/notes";
 import { useState } from "react";
-import { NewNote } from "~/db/schema";
+import { meServer } from "~/api/auth";
 
 export const Route = createFileRoute("/notes")({
   loader: async ({ context }) => {
+    const me = await meServer();
+    if (!me.userId) {
+      throw redirect({ to: "/login" });
+    }
     await prefetchNotes(context.queryClient);
   },
   head: () => ({ meta: [{ title: "Notes" }] }),
@@ -27,7 +36,8 @@ function NotesComponent() {
   const [favorite, setFavorite] = useState(false);
 
   const addNote = useMutation({
-    mutationFn: (data: NewNote) => createNoteServer({ data }),
+    mutationFn: (data: { title: string; body?: string; favorite?: boolean }) =>
+      createNoteServer({ data }),
     onSettled: () => qc.invalidateQueries({ queryKey: ["notes"] }),
   });
 
@@ -35,7 +45,7 @@ function NotesComponent() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    addNote.mutate({ title, body, favorite } satisfies NewNote);
+    addNote.mutate({ title, body, favorite });
     setTitle("");
     setBody("");
     setFavorite(false);

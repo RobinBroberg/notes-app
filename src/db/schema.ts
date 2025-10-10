@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   mysqlTable,
   timestamp,
@@ -6,17 +6,40 @@ import {
   int,
   text,
   boolean,
+  serial,
 } from "drizzle-orm/mysql-core";
 
-export const notesTable = mysqlTable("notes_table", {
-  id: int().primaryKey().autoincrement().notNull(),
+export const users = mysqlTable("users", {
+  id: serial("id").primaryKey(),
+  username: varchar({ length: 191 }).notNull().unique(),
+  password: varchar({ length: 191 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const notes = mysqlTable("notes", {
+  id: serial("id").primaryKey(),
   title: varchar({ length: 255 }).notNull(),
-  body: text().notNull().default(""),
+  body: text().notNull(),
   favorite: boolean("favorite").notNull().default(false),
+  userId: int("user_id").notNull(),
   createdAt: timestamp("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
-export type Note = typeof notesTable.$inferSelect;
-export type NewNote = typeof notesTable.$inferInsert;
+export const userRelations = relations(users, ({ many }) => ({
+  notes: many(notes),
+}));
+
+export const notesRelations = relations(notes, ({ one }) => ({
+  user: one(users, {
+    fields: [notes.userId],
+    references: [users.id],
+  }),
+}));
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+
+export type Note = typeof notes.$inferSelect;
+export type NewNote = typeof notes.$inferInsert;
