@@ -4,14 +4,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
-import {
-  invalidateNotes,
-  notesListQueryOptions,
-  prefetchNotes,
-} from "~/utils/notes";
+import { notesListQueryOptions, prefetchNotes } from "~/utils/notes";
 import { createNoteServer } from "~/api/notes";
 import { useState } from "react";
-import { NewNote, Note } from "~/db/schema";
+import { NewNote } from "~/db/schema";
 
 export const Route = createFileRoute("/notes")({
   loader: async ({ context }) => {
