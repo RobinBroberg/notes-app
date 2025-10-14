@@ -7,5 +7,22 @@
   },
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
-  }
+  },
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "ssh": "Disabled",
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3307,
+      "driver": "MySQL",
+      "name": "notes-mysql",
+      "database": "notes",
+      "username": "robin",
+      "password": "drizzle"
+    }
+  ]
 }

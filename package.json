@@ -17,6 +17,7 @@
     "@tanstack/react-router-devtools": "^1.132.51",
     "@tanstack/react-router-ssr-query": "^1.132.47",
     "@tanstack/react-start": "^1.132.51",
+    "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.4.1",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.6",

@@ -18,11 +18,11 @@ function LoginPage() {
 
     try {
       const res = await loginServer({ data: { username, password } });
-      if ((res as any)?.ok) {
+      if (res.ok) {
         setMsg("Login successful!");
         navigate({ to: "/notes", replace: true });
       } else {
-        setMsg((res as any)?.message ?? "Login failed");
+        setMsg(res.message ?? "Login failed");
       }
     } catch (err: any) {
       setMsg(err?.message ?? "Login failed");

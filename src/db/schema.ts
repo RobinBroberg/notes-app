@@ -11,8 +11,8 @@ import {
 
 export const users = mysqlTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar({ length: 191 }).notNull().unique(),
-  password: varchar({ length: 191 }).notNull(),
+  username: varchar({ length: 255 }).notNull().unique(),
+  password: varchar({ length: 255 }).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -22,9 +22,7 @@ export const notes = mysqlTable("notes", {
   body: text().notNull(),
   favorite: boolean("favorite").notNull().default(false),
   userId: int("user_id").notNull(),
-  createdAt: timestamp("created_at")
-    .notNull()
-    .default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const userRelations = relations(users, ({ many }) => ({

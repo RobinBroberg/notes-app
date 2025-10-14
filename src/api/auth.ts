@@ -3,28 +3,31 @@ import { db } from "~/db/db";
 import { users } from "~/db/schema";
 import { eq } from "drizzle-orm";
 import { useAppSession } from "~/utils/session";
+import bcrypt from "bcryptjs";
 
 export const registerServer = createServerFn({ method: "POST" })
-  .inputValidator((input: { username: string; password: string }) => input)
+  .inputValidator((i: { username: string; password: string }) => i)
   .handler(async ({ data }) => {
+    const hash = await bcrypt.hash(data.password, 10);
     await db.insert(users).values({
       username: data.username,
-      password: data.password,
+      password: hash,
     });
-
     return { message: "User registered!" };
   });
 
 export const loginServer = createServerFn({ method: "POST" })
   .inputValidator((i: { username: string; password: string }) => i)
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<{ ok: boolean; message: string }> => {
     const [user] = await db
       .select()
       .from(users)
       .where(eq(users.username, data.username));
-    if (!user || user.password !== data.password) {
-      throw new Error("Wrong username or password");
-    }
+    if (!user) throw new Error("Wrong username or password");
+
+    const ok = await bcrypt.compare(data.password, user.password);
+    if (!ok) throw new Error("Wrong username or password");
+
     const session = await useAppSession();
     await session.update({ userId: user.id, username: user.username });
     return { ok: true, message: "Logged in!" };
